@@ -1,20 +1,90 @@
 const $ = id => document.getElementById(id);
-const money = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n || 0);
-function calculate(){
- const price=+$('homePrice').value||0, down=Math.min(+$('downPayment').value||0,price), rate=(+$('rate').value||0)/100, years=+$('term').value||30;
- const principal=Math.max(price-down,0), monthlyRate=rate/12, n=years*12;
- const pi=monthlyRate===0 ? principal/n : principal*(monthlyRate*Math.pow(1+monthlyRate,n))/(Math.pow(1+monthlyRate,n)-1);
- const tax=price*((+$('taxRate').value||0)/100)/12, ins=(+$('insurance').value||0)/12, hoa=+$('hoa').value||0;
- const pmi=down/Math.max(price,1)<0.2 ? principal*((+$('pmiRate').value||0)/100)/12 : 0;
- const extra=Math.max(+$('extra').value||0,0), total=pi+tax+ins+hoa+pmi;
- let balance=principal,totalInterest=0,rows=[],month=0; const start=new Date();
- while(balance>0.01 && month<n+600){ month++; const interest=monthlyRate?balance*monthlyRate:0; const principalPaid=Math.min(balance,Math.max(pi-interest,0)+extra); const payment=principalPaid+interest; balance=Math.max(0,balance-principalPaid); totalInterest+=interest; rows.push({month,principal:principalPaid,interest,payment,balance}); if(month===n && balance>0 && extra===0) break; }
- const totalPaid=principal+totalInterest;
- $('monthlyTotal').textContent=money(total); $('pi').textContent=money(pi); $('tax').textContent=money(tax); $('ins').textContent=money(ins); $('pmi').textContent=money(pmi); $('hoaOut').textContent=money(hoa); $('interest').textContent=money(totalInterest); $('totalPaid').textContent=money(totalPaid);
- const payoff=new Date(start.getFullYear(),start.getMonth()+month,1); $('payoff').textContent=payoff.toLocaleDateString('en-US',{month:'short',year:'numeric'});
- const tbody=$('schedule'); tbody.innerHTML=rows.map(r=>`<tr><td>${r.month}</td><td>${money(r.principal)}</td><td>${money(r.interest)}</td><td>${money(r.payment)}</td><td>${money(r.balance)}</td></tr>`).join('');
+const money = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number.isFinite(n) ? n : 0);
+const pct = n => new Intl.NumberFormat('en-US',{style:'percent',maximumFractionDigits:1}).format(n);
+
+function buildSchedule(principal, rate, years, extra, price, pmiRate){
+  const monthlyRate = rate / 12;
+  const scheduledMonths = years * 12;
+  const scheduledPI = monthlyRate === 0 ? principal / Math.max(scheduledMonths,1)
+    : principal * (monthlyRate * Math.pow(1 + monthlyRate, scheduledMonths)) /
+      (Math.pow(1 + monthlyRate, scheduledMonths) - 1);
+  const originalLTV = principal / Math.max(price,1);
+  const pmiThreshold = price * 0.80;
+  let balance = principal, totalInterest = 0, month = 0, rows = [], pmiTotal = 0;
+  while(balance > 0.005 && month < scheduledMonths + 600){
+    month++;
+    const interest = monthlyRate ? balance * monthlyRate : 0;
+    const scheduledPrincipal = Math.max(scheduledPI - interest, 0);
+    const principalPaid = Math.min(balance, scheduledPrincipal + extra);
+    const payment = principalPaid + interest;
+    balance = Math.max(0, balance - principalPaid);
+    totalInterest += interest;
+
+    // PMI is modeled until the balance reaches 80% of the original home value.
+    // Actual PMI cancellation timing varies by loan and lender.
+    const pmiActive = originalLTV > 0.80 && balance > pmiThreshold;
+    const monthlyPMI = pmiActive ? principal * (pmiRate / 100) / 12 : 0;
+    pmiTotal += monthlyPMI;
+
+    rows.push({month, principal:principalPaid, interest, payment, balance, pmi:monthlyPMI});
+  }
+  return {scheduledPI, rows, totalInterest, pmiTotal, months:month};
 }
-$('mortgageForm').addEventListener('submit',e=>{e.preventDefault();calculate();});
-$('mortgageForm').addEventListener('input',calculate);
-$('toggleSchedule').addEventListener('click',()=>{const w=$('scheduleWrap');w.hidden=!w.hidden;$('toggleSchedule').textContent=w.hidden?'Show schedule':'Hide schedule';});
+
+function calculate(){
+  const price = Math.max(+$('homePrice').value || 0, 0);
+  const down = Math.min(Math.max(+$('downPayment').value || 0, 0), price);
+  const rate = Math.max(+$('rate').value || 0, 0) / 100;
+  const years = +$('term').value || 30;
+  const principal = Math.max(price - down, 0);
+  const tax = price * ((+$('taxRate').value || 0) / 100) / 12;
+  const insurance = Math.max(+$('insurance').value || 0, 0) / 12;
+  const hoa = Math.max(+$('hoa').value || 0, 0);
+  const pmiRate = Math.max(+$('pmiRate').value || 0, 0);
+  const extra = Math.max(+$('extra').value || 0, 0);
+
+  const base = buildSchedule(principal, rate, years, 0, price, pmiRate);
+  const accelerated = buildSchedule(principal, rate, years, extra, price, pmiRate);
+  const monthlyPMI = base.rows.length ? base.rows[0].pmi : 0;
+  const monthlyTotal = base.scheduledPI + tax + insurance + hoa + monthlyPMI;
+
+  const interestSaved = Math.max(0, base.totalInterest - accelerated.totalInterest);
+  const monthsSaved = Math.max(0, base.months - accelerated.months);
+  const baseLoanPayments = principal + base.totalInterest;
+  const acceleratedLoanPayments = principal + accelerated.totalInterest;
+
+  $('loanAmount').textContent = money(principal);
+  $('monthlyTotal').textContent = money(monthlyTotal);
+  $('pi').textContent = money(base.scheduledPI);
+  $('tax').textContent = money(tax);
+  $('ins').textContent = money(insurance);
+  $('pmi').textContent = money(monthlyPMI);
+  $('hoaOut').textContent = money(hoa);
+  $('interest').textContent = money(base.totalInterest);
+  $('totalPaid').textContent = money(baseLoanPayments);
+
+  const payoff = new Date();
+  payoff.setDate(1);
+  payoff.setMonth(payoff.getMonth() + base.months);
+  $('payoff').textContent = payoff.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+
+  $('extraSavings').textContent = money(interestSaved);
+  $('monthsSaved').textContent = monthsSaved ? `${monthsSaved} month${monthsSaved === 1 ? '' : 's'}` : '0 months';
+  $('extraResult').textContent = extra > 0
+    ? `With ${money(extra)} extra each month, estimated loan payoff is ${accelerated.months} months instead of ${base.months}.`
+    : 'Enter an extra monthly principal amount to estimate interest and time savings.';
+
+  const tbody = $('schedule');
+  tbody.innerHTML = accelerated.rows.map(r =>
+    `<tr><td>${r.month}</td><td>${money(r.principal)}</td><td>${money(r.interest)}</td><td>${money(r.payment)}</td><td>${money(r.balance)}</td></tr>`
+  ).join('');
+}
+
+$('mortgageForm').addEventListener('submit', e => { e.preventDefault(); calculate(); });
+$('mortgageForm').addEventListener('input', calculate);
+$('toggleSchedule').addEventListener('click', () => {
+  const w = $('scheduleWrap');
+  w.hidden = !w.hidden;
+  $('toggleSchedule').textContent = w.hidden ? 'Show schedule' : 'Hide schedule';
+});
 calculate();
