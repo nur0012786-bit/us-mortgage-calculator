@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>US Mortgage Calculator — Payment, PMI, Taxes & Amortization</title>
+<meta name="description" content="Free US mortgage calculator with principal, interest, property taxes, homeowners insurance, PMI, HOA fees and a full amortization schedule.">
+<link rel="canonical" href="https://nur0012786-bit.github.io/us-mortgage-calculator/">
+<meta property="og:title" content="US Mortgage Calculator">
+<meta property="og:description" content="Estimate your monthly mortgage payment and see the full amortization schedule.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="assets/styles.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"US Mortgage Calculator","applicationCategory":"FinanceApplication","operatingSystem":"All","description":"Mortgage payment and amortization calculator for US homebuyers.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+</head>
+<body>
+<header class="site-header"><div class="wrap nav"><a class="brand" href="./">MortgageCalc US</a><nav><a href="./">Calculator</a><a href="guides/how-mortgage-payments-work.html">Guides</a><a href="about.html">About</a></nav></div></header>
+<main class="wrap">
+<section class="hero"><p class="eyebrow">FREE US MORTGAGE TOOL</p><h1>Mortgage Calculator</h1><p>Estimate principal and interest, taxes, insurance, PMI and HOA costs. Then inspect the full amortization schedule.</p></section>
+<section class="calculator-grid">
+<form id="mortgageForm" class="card form-card">
+<h2>Loan details</h2>
+<div class="field-grid">
+<label>Home price<input id="homePrice" type="number" min="0" step="1000" value="400000"></label>
+<label>Down payment ($)<input id="downPayment" type="number" min="0" step="500" value="80000"></label>
+<label>Interest rate (%)<input id="rate" type="number" min="0" max="30" step="0.01" value="7.00"></label>
+<label>Loan term<select id="term"><option value="30">30 years</option><option value="20">20 years</option><option value="15">15 years</option><option value="10">10 years</option></select></label>
+</div>
+<details><summary>Advanced costs</summary><div class="field-grid">
+<label>Property tax (%/year)<input id="taxRate" type="number" min="0" step="0.01" value="1.20"></label>
+<label>Homeowners insurance ($/year)<input id="insurance" type="number" min="0" step="50" value="1800"></label>
+<label>HOA ($/month)<input id="hoa" type="number" min="0" step="10" value="0"></label>
+<label>PMI (%/year)<input id="pmiRate" type="number" min="0" step="0.01" value="0.70"></label>
+<label>Extra monthly principal ($)<input id="extra" type="number" min="0" step="25" value="0"></label>
+</div></details>
+<button type="submit">Calculate mortgage</button>
+<p class="fine">Estimates only. Actual rates, taxes, insurance, PMI, closing costs and lender requirements vary.</p>
+</form>
+<section class="card result-card" aria-live="polite">
+<h2>Estimated payment</h2><div class="big" id="monthlyTotal">$0</div><p class="muted">Estimated total monthly housing payment</p>
+<div class="breakdown"><div><span>Principal & interest</span><strong id="pi">$0</strong></div><div><span>Property tax</span><strong id="tax">$0</strong></div><div><span>Insurance</span><strong id="ins">$0</strong></div><div><span>PMI</span><strong id="pmi">$0</strong></div><div><span>HOA</span><strong id="hoaOut">$0</strong></div></div>
+<div class="stats"><div><span>Total interest</span><strong id="interest">$0</strong></div><div><span>Total loan payments</span><strong id="totalPaid">$0</strong></div><div><span>Payoff</span><strong id="payoff">—</strong></div></div>
+</section></section>
+<section class="card schedule-card"><div class="section-head"><div><h2>Amortization schedule</h2><p>Monthly principal, interest and remaining balance.</p></div><button id="toggleSchedule" class="secondary" type="button">Show schedule</button></div><div id="scheduleWrap" hidden><div class="table-scroll"><table><thead><tr><th>Payment</th><th>Principal</th><th>Interest</th><th>Total</th><th>Balance</th></tr></thead><tbody id="schedule"></tbody></table></div></div></section>
+<section class="content two-col"><article><h2>What this mortgage calculator includes</h2><p>The calculator separates principal and interest from common escrow and housing costs. This matters because the total payment can be materially higher than principal and interest alone. The CFPB notes that property taxes, homeowners insurance and mortgage insurance can be part of the total monthly payment. <a href="https://www.consumerfinance.gov/ask-cfpb/on-a-mortgage-whats-the-difference-between-my-principal-and-interest-payment-and-my-total-monthly-payment-en-1941/" rel="nofollow">Learn more from the CFPB</a>.</p><h3>How the payment is calculated</h3><p>For a fixed-rate loan, the principal-and-interest payment uses the standard amortization formula. Taxes, insurance, PMI and HOA are added separately so you can change them without changing the loan math.</p></article><aside class="ad-slot"><span>Advertisement</span><div>Ad placement reserved</div></aside></section>
+<section class="content"><h2>Mortgage guides</h2><div class="links"><a href="guides/how-mortgage-payments-work.html">How mortgage payments work</a><a href="guides/mortgage-amortization-explained.html">Mortgage amortization explained</a><a href="guides/pmi-explained.html">PMI explained</a></div></section>
+</main>
+<footer><div class="wrap"><div><strong>MortgageCalc US</strong><p>Independent educational calculator. Not a lender, broker or financial adviser.</p></div><div class="footer-links"><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html">Contact</a></div></div></footer>
+<script src="assets/app.js" defer></script>
+</body></html>
