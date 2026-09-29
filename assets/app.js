@@ -31,6 +31,10 @@ function buildSchedule(principal, rate, years, extra, price, pmiRate){
   return {scheduledPI, rows, totalInterest, pmiTotal, months:month};
 }
 
+function trackEvent(name, params = {}) {
+  if (typeof gtag === 'function') gtag('event', name, params);
+}
+
 function calculate(){
   const price = Math.max(+$('homePrice').value || 0, 0);
   const down = Math.min(Math.max(+$('downPayment').value || 0, 0), price);
@@ -80,11 +84,18 @@ function calculate(){
   ).join('');
 }
 
-$('mortgageForm').addEventListener('submit', e => { e.preventDefault(); calculate(); });
+$('mortgageForm').addEventListener('submit', e => {
+  e.preventDefault();
+  calculate();
+  trackEvent('calculator_used', { calculator_name: 'mortgage_calculator', extra_payment: extraValue() });
+});
 $('mortgageForm').addEventListener('input', calculate);
+function extraValue(){ return Math.max(+$('extra').value || 0, 0); }
+
 $('toggleSchedule').addEventListener('click', () => {
   const w = $('scheduleWrap');
   w.hidden = !w.hidden;
   $('toggleSchedule').textContent = w.hidden ? 'Show schedule' : 'Hide schedule';
+  trackEvent('amortization_view', { calculator_name: 'mortgage_calculator', action: w.hidden ? 'hide' : 'show' });
 });
 calculate();
