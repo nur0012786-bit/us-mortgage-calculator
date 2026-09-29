@@ -3,3 +3,16 @@
 .extra-box{margin-top:1.25rem;padding:1rem;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
 .extra-box h3{margin:.1rem 0 .35rem}
 .extra-box .stats{margin-top:.75rem}
+
+.form-help{margin-top:20px;padding:18px;border:1px solid #d9e4f2;border-radius:14px;background:linear-gradient(180deg,#f8fbff 0%,#f3f7fc 100%)}
+.help-heading{display:flex;align-items:flex-start;gap:11px;padding-bottom:13px;border-bottom:1px solid #dfe7f0}
+.help-icon{width:27px;height:27px;display:grid;place-items:center;flex:0 0 27px;border-radius:50%;background:#e6f0ff;color:var(--accent);font-weight:900;font-size:.9rem}
+.help-heading h3{margin:0;font-size:1rem}
+.help-heading p{margin:2px 0 0;font-size:.78rem;color:var(--muted)}
+.help-list{display:grid;gap:0}
+.help-item{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:13px 0;border-bottom:1px solid #e3eaf2}
+.help-item:last-child{border-bottom:0;padding-bottom:2px}
+.help-number{font-size:.72rem;font-weight:900;color:var(--accent);padding-top:2px}
+.help-item strong{display:block;font-size:.86rem;color:var(--ink)}
+.help-item p{margin:2px 0 0;font-size:.76rem;line-height:1.45;color:var(--muted)}
+@media(max-width:800px){.form-help{margin-top:18px}.help-item{grid-template-columns:30px 1fr}}
